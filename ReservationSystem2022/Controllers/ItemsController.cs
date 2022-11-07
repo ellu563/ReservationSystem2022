@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,7 @@ namespace ReservationSystem2022.Controllers
         /// </summary>
         /// <returns>list of items</returns>
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<ItemDTO>>> GetItems()
         {
             return Ok(await _service.GetItemsAsync()); // Ok=http 200
@@ -43,6 +45,7 @@ namespace ReservationSystem2022.Controllers
         /// <response code="404">Item not found from database</response>
        
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<ItemDTO>> GetItem(long id) // palauttaa itemDTO:n, haetaan id:n perusteella
         {
             var item = await _service.GetItemAsync(id); // kutsutaan serviceä.. joka kutsuu repositorya

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -16,6 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ReservationContext>(opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("ReservationDB")));
 
 builder.Services.AddControllers();
+
+builder.Services.AddAuthentication("BasicAuthentication").AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
 
 // esitell‰‰n palvelut mit‰ k‰ytet‰‰n
 // jotta n‰it‰ luokkia voi k‰ytt‰‰ hyˆdynt‰en dependency injektion tekniikkaa, on ne esitelt‰v‰ t‰‰ll‰ program.cs
@@ -70,6 +73,9 @@ app.UseHttpsRedirection();
 
 // katsotaan onko avainta, eli otetaan middleware kayttoon
 app.UseMiddleware<ApiKeyMiddleware>();
+
+// autentikointi kayttoon
+app.UseAuthentication();
 
 app.UseAuthorization();
 

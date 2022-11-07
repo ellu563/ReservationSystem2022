@@ -16,13 +16,14 @@
         {
             // onko avainta olemassa, onko avain headerissa
             // out var extractedApiKey = jos löytyy arvo, tähän tallennetaan se
-            if(!context.Request.Headers.TryGetValue(APIKEYNAME, out var extractedApiKey))
+            if(!context.Request.Headers.TryGetValue(APIKEYNAME, out var extractedApiKey)) // headers = otsikkotiedot
             {
                 context.Response.StatusCode = 401; // ei löytynyt sitä
                 await context.Response.WriteAsync("Api key missing");
                 return;
             }
 
+            // halutaan käyttöön sellanen palvelu joka osaa lukea appsettingssiä 
             var appSettings = context.RequestServices.GetRequiredService<IConfiguration>();
             // luetaan se avain mikä laitettiin appsettings.jsoniin
             var apiKey = appSettings.GetValue<string>(APIKEYNAME);
@@ -36,7 +37,7 @@
             }
 
             await _next(context);
-        }
+        } 
 
         // postmaniin lisatty ApiKey (headers kohtaan ja sinne se key) sit voidaan get ni toimii
     }

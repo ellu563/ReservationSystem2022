@@ -12,9 +12,10 @@ namespace ReservationSystem2022.Middleware
 {
     public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-        // private readonly IUserAuthenticationService userAuthenticationService;
-        public BasicAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
+        private readonly IUserAuthenticationService _userAuthenticationService;
+        public BasicAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, IUserAuthenticationService userAuthenticationService) : base(options, logger, encoder, clock)
         {
+            _userAuthenticationService = userAuthenticationService;
         }
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -22,22 +23,26 @@ namespace ReservationSystem2022.Middleware
             var endpoint = Context.GetEndpoint();
             if (endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null)
             {
-                return AuthenticateResult.NoResult();
+                return AuthenticateResult.NoResult(); // jos ei vaadi autentikaatiota/ei ole sita
             }
             if (!Request.Headers.ContainsKey("Authorization"))
             {
-                return AuthenticateResult.Fail("Authorization header missing");
+                return AuthenticateResult.Fail("Authorization header missing"); // tarvitaan autentikointi
+                // ei ole tullut tietoja/on tullut vaarat tiedot
             }
             User user = null;
             try
             {
-                var authHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
-                var credentialBytes = Convert.FromBase64String(authHeader.Parameter);
-                var credentials = Encoding.UTF8.GetString(credentialBytes).Split(new[] { ':' }, 2);
-                var userName = credentials[0];
-                var password = credentials[1];
+                var authHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]); // etitaan Authorization ja otetaan sen arvo
+                var credentialBytes = Convert.FromBase64String(authHeader.Parameter); // sisaltaa base koodin, muutetaan tavujonoksi
+                var credentials = Encoding.UTF8.GetString(credentialBytes).Split(new[] { ':' }, 2); // tehaan siita string (taulukkoon)
+                var userName = credentials[0]; // eli taulukon eka alkio on username
+                var password = credentials[1]; // ja toka password
 
-                if (userName != "test" || password != "test")
+                // service esitelty program.cs:ssä ni nyt voidaan kayttaa taalla
+                // eli kutsutaan Authenticate funktiota, tekee tietokantahaun
+                user = await _userAuthenticationService.Authenticate(userName, password);
+                if (user ==null)
                 {
                     return AuthenticateResult.Fail("Unauthorised");
                 }
@@ -48,13 +53,14 @@ namespace ReservationSystem2022.Middleware
             }
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, "test")
+                new Claim(ClaimTypes.Name, user.UserName), // roolin voisi laittaa esim. ClaimTypes.Role
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             };
             var identity = new ClaimsIdentity(claims, Scheme.Name);
             var principal = new ClaimsPrincipal(identity);
 
             var ticket = new AuthenticationTicket(principal, Scheme.Name);
-            return AuthenticateResult.Success(ticket);
+            return AuthenticateResult.Success(ticket); // on tunnistettu
         }
     }
 }

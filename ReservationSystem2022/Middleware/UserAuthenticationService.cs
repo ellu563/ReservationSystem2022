@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.EntityFrameworkCore;
 using ReservationSystem2022.Models;
 
 namespace ReservationSystem2022.Middleware
@@ -27,11 +28,22 @@ namespace ReservationSystem2022.Middleware
             {
                 return null;
             }
-            if(user.Password != password)
+            // onko oikea salasana
+            byte[] salt = user.Salt; 
+
+            string hashedPassWord = Convert.ToBase64String(KeyDerivation.Pbkdf2( // pdKDF2 laskentafunktio
+                password: user.Password,
+                salt: salt,
+                prf: KeyDerivationPrf.HMACSHA256,
+                iterationCount: 10000, // kuinka pitkaan algoritmia pyoritetaan
+                numBytesRequested: 256 / 8));
+
+            if(hashedPassWord != user.Password)
             {
                 return null;
             }
-            // on tarkistettu kayttajanimi ja salasana joten palautetaan
+
+
             return user;
         }
     }

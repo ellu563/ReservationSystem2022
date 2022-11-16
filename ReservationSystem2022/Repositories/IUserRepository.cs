@@ -6,5 +6,7 @@ namespace ReservationSystem2022.Repositories
     {
         // Itemin mukana tulee käyttäjänimi
         public Task<User> GetUserAsync(String userName);
+
+        public Task<User> AddUserAsync(User user);
     }
 }

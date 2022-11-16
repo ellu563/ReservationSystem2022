@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReservationSystem2022.Models;
+using ReservationSystem2022.Services;
 
 namespace ReservationSystem2022.Controllers
 {
@@ -17,10 +18,12 @@ namespace ReservationSystem2022.Controllers
         // tämän avulla voidaan esim. käyttää postmania (täällä crud toiminnot)
 
         private readonly ReservationContext _context;
+        private readonly IUserService _service;
 
-        public UsersController(ReservationContext context)
+        public UsersController(ReservationContext context, IUserService service)
         {
             _context = context;
+            _service = service;
         }
 
         // GET: api/Users
@@ -78,12 +81,16 @@ namespace ReservationSystem2022.Controllers
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<UserDTO>> PostUser(User user)
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            UserDTO dto = await _service.CreateUserAsync(user);
 
-            return CreatedAtAction("GetUser", new { id = user.Id }, user);
+            if(dto == null)
+            {
+                return Problem();
+            }
+
+            return CreatedAtAction(nameof(PostUser), new { username = dto.UserName }, dto);
         }
 
         // DELETE: api/Users/5

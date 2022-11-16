@@ -25,6 +25,7 @@ builder.Services.AddAuthentication("BasicAuthentication").AddScheme<Authenticati
 // tässä kerrotaan mikä luokka toteuttaa minkäkin rajapinnan
 builder.Services.AddScoped<IItemService, ItemService>();
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 builder.Services.AddScoped<IReservationService, ReservationService>();

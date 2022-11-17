@@ -8,6 +8,11 @@ namespace ReservationSystem2022.Middleware
     public interface IUserAuthenticationService
     {
         Task<User> Authenticate(string username, string password);
+        Task<bool> IsAllowed(String username, ItemDTO item); // käyttäjä haluaa tehdä kohteelle jotain, saako se
+
+        Task<bool> IsAllowed(String username, User user);
+
+        Task<bool> IsAllowed(String username, ReservationDTO reservation);
     }
     public class UserAuthenticationService : IUserAuthenticationService // toteuttaa interfacen
     {
@@ -45,6 +50,34 @@ namespace ReservationSystem2022.Middleware
 
 
             return user;
+        }
+
+        public async Task<bool> IsAllowed(string username, ItemDTO item)
+        {
+            // onko käyttäjä olemassa, mennään tietokantaan, palauttaa joko yhden kayttajan tai ei mitaan
+            User user = await _context.Users.Where(x => x.UserName == username).FirstOrDefaultAsync();
+
+            // löytyikö kayttaja
+            if(user == null)
+            {
+                return false;
+            }
+            // onko kayttajanimi sama kun itemissä on merkattu owner
+            if(user.UserName == item.Owner)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public Task<bool> IsAllowed(string username, User user)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> IsAllowed(string username, ReservationDTO reservation)
+        {
+            throw new NotImplementedException();
         }
     }
 }

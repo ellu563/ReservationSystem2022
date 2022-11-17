@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ReservationSystem2022.Middleware;
 using ReservationSystem2022.Models;
 using ReservationSystem2022.Services;
 
@@ -18,9 +20,12 @@ namespace ReservationSystem2022.Controllers
         // private readonly ReservationContext _context; // päästään tietokantaan kiinni (vanha)
         private readonly IItemService _service;
 
-        public ItemsController(IItemService service) // ottaa vastaan ja muistiin
+        private readonly IUserAuthenticationService _authenticationService;
+
+        public ItemsController(IItemService service, IUserAuthenticationService authenticationService) // ottaa vastaan ja muistiin
         {
             _service = service;
+            _authenticationService = authenticationService;
         }
 
         // GET: api/Items
@@ -61,11 +66,21 @@ namespace ReservationSystem2022.Controllers
         // PUT: api/Items/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize] // vaaditaan
         public async Task<IActionResult> PutItem(long id, ItemDTO item)
         {
+            // katsotaan ensin onko kutsu ok
             if (id != item.Id) // onko osoitteen id ja itemin id samat, jos ei
             {
                 return BadRequest(); // palauta badrequest
+            }
+
+            // tarkista, onko oikeus muokata
+            bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, item);
+
+            if(!isAllowed)
+            {
+                return Unauthorized();
             }
 
             ItemDTO updatedItem = await _service.UpdateItemAsync(item); // jos on sama, lähetetään eteenpäin servicelle
@@ -80,6 +95,7 @@ namespace ReservationSystem2022.Controllers
         // POST: api/Items = tätä muokattu
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<ItemDTO>> PostItem(ItemDTO item)
         {
             ItemDTO newItem = await _service.CreateItemAsync(item);
@@ -93,6 +109,7 @@ namespace ReservationSystem2022.Controllers
 
         // DELETE: api/Items/5
         [HttpDelete("{id}")]
+        [Authorize] // saa omat iteminsä poistaa
         public async Task<IActionResult> DeleteItem(long id)
         {
             if(await _service.DeleteItemAsync(id))

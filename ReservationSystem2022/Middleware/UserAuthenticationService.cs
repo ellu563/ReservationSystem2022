@@ -37,7 +37,7 @@ namespace ReservationSystem2022.Middleware
             byte[] salt = user.Salt; 
 
             string hashedPassWord = Convert.ToBase64String(KeyDerivation.Pbkdf2( // pdKDF2 laskentafunktio
-                password: user.Password,
+                password: password,
                 salt: salt,
                 prf: KeyDerivationPrf.HMACSHA256,
                 iterationCount: 10000, // kuinka pitkaan algoritmia pyoritetaan

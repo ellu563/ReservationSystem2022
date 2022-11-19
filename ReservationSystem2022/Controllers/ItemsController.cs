@@ -18,8 +18,16 @@ namespace ReservationSystem2022.Controllers
     public class ItemsController : ControllerBase
     {
         // private readonly ReservationContext _context; // päästään tietokantaan kiinni (vanha)
-        private readonly IItemService _service;
+        private readonly IItemService _service; 
+        
+        // eli controller ottaa vastaan verkon yli saapuvat kutsut ja  kutsuu tarvittavia palveluita service luokasta
 
+        // oma kommentti: eli program.cs:ssä on esitelty mikä interface toteuttaa mikä luokka, ja näin päästään kiinni suoraan 
+        // siihen ns. luokkaan, tai vaikka useampaan luokkaan,
+        // ei siis sinällään väliä mitä siellä luokassa toteutetaan, interface vaan ns. suorittaa sen toteutuksen
+        // eli kaikki eri paikat voi käyttää sitä, kun se esitellään tuolleen interfacena, ja esitelty program.cs
+        // nyt kun on vain yksi luokka siellä, se interface siis "toteuttaa" sen luokan
+        // ja viiään se myös tuonne constructoriin.. tässä siis päästään kiinni sinne userauthenticationserviceen
         private readonly IUserAuthenticationService _authenticationService;
 
         public ItemsController(IItemService service, IUserAuthenticationService authenticationService) // ottaa vastaan ja muistiin

@@ -42,7 +42,7 @@ namespace ReservationSystem2022.Middleware
                 // service esitelty program.cs:ssä ni nyt voidaan kayttaa taalla
                 // eli kutsutaan Authenticate funktiota, tekee tietokantahaun
                 user = await _userAuthenticationService.Authenticate(userName, password);
-                if (user ==null)
+                if (user ==null) // user on nyt null jostai syystä
                 {
                     return AuthenticateResult.Fail("Unauthorised");
                 }

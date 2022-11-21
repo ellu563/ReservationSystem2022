@@ -11,7 +11,6 @@
 
         // mitä varataan, mitä kohdetta tämä käyttäjä varaa
         // ? = voi olla myös tyhjä, sallitaan että on varaus jolla ei ole omistajaa tai kohdetta
-        
         public virtual Item? Target { get; set; }
 
         // milloin varaus alkaa

@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ReservationSystem2022.Middleware;
 using ReservationSystem2022.Models;
 using ReservationSystem2022.Services;
 
@@ -19,11 +22,13 @@ namespace ReservationSystem2022.Controllers
 
         private readonly ReservationContext _context;
         private readonly IUserService _service;
+        private readonly IUserAuthenticationService _authenticationService;
 
-        public UsersController(ReservationContext context, IUserService service)
+        public UsersController(ReservationContext context, IUserService service, IUserAuthenticationService authenticationService)
         {
             _context = context;
             _service = service;
+            _authenticationService = authenticationService;
         }
 
         // GET: api/Users
@@ -50,11 +55,21 @@ namespace ReservationSystem2022.Controllers
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize]
+
         public async Task<IActionResult> PutUser(long id, User user)
         {
             if (id != user.Id)
             {
                 return BadRequest();
+            }
+
+            // tarkista, onko oikeus muokata
+            bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, user);
+
+            if (!isAllowed)
+            {
+                return Unauthorized();
             }
 
             _context.Entry(user).State = EntityState.Modified;

@@ -24,7 +24,7 @@ namespace ReservationSystem2022.Controllers
 
         // oma kommentti: eli program.cs:ssä on esitelty mikä interface toteuttaa mikä luokka, ja näin päästään kiinni suoraan 
         // siihen ns. luokkaan, tai vaikka useampaan luokkaan,
-        // ei siis sinällään väliä mitä siellä luokassa toteutetaan, interface vaan ns. suorittaa sen toteutuksen
+        // ei siis sinällään väliä mitä siellä luokassa toteutetaan, interface vaan ns. suorittaa sen luokan toteutuksen
         // eli kaikki eri paikat voi käyttää sitä, kun se esitellään tuolleen interfacena, ja esitelty program.cs
         // nyt kun on vain yksi luokka siellä, se interface siis "toteuttaa" sen luokan
         // ja viiään se myös tuonne constructoriin.. tässä siis päästään kiinni sinne userauthenticationserviceen
@@ -62,6 +62,7 @@ namespace ReservationSystem2022.Controllers
         public async Task<ActionResult<ItemDTO>> GetItem(long id) // palauttaa itemDTO:n, haetaan id:n perusteella
         {
             var item = await _service.GetItemAsync(id); // kutsutaan serviceä.. joka kutsuu repositorya
+            // await = async, eli säikeen voi vapauttaa muihin töihin
 
             if (item == null)
             {
@@ -120,7 +121,17 @@ namespace ReservationSystem2022.Controllers
         [Authorize] // saa omat iteminsä poistaa
         public async Task<IActionResult> DeleteItem(long id)
         {
-            if(await _service.DeleteItemAsync(id))
+            ItemDTO item = new ItemDTO();
+            item.Id = id;
+            // tarkista, onko oikeus muokata
+            bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, item);
+
+            if (!isAllowed)
+            {
+                return Unauthorized();
+            }
+
+            if (await _service.DeleteItemAsync(id))
             {
                 return Ok();
             }

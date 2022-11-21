@@ -10,7 +10,7 @@ namespace ReservationSystem2022.Middleware
         Task<User> Authenticate(string username, string password);
         Task<bool> IsAllowed(String username, ItemDTO item); // käyttäjä haluaa tehdä kohteelle jotain, saako se
 
-        Task<bool> IsAllowed(String username, User user);
+        Task<bool> IsAllowed(String username, User user); // eli parametrin mukaan menee oikein
 
         Task<bool> IsAllowed(String username, ReservationDTO reservation);
     }
@@ -52,32 +52,54 @@ namespace ReservationSystem2022.Middleware
             return user;
         }
 
+        // onko talla kayttajanimella oikeus kasitella tata itemia
         public async Task<bool> IsAllowed(string username, ItemDTO item)
         {
             // onko käyttäjä olemassa, mennään tietokantaan, palauttaa joko yhden kayttajan tai ei mitaan
-            User user = await _context.Users.Where(x => x.UserName == username).FirstOrDefaultAsync();
+            User? user = await _context.Users.Where(x => x.UserName == username).FirstOrDefaultAsync();
+            // haetaan item tietokannasta, haetaan tuon itemin id:n perusteella
+            Item? dbItem = await _context.Items.Include(i => i.Owner).FirstOrDefaultAsync(i => i.Id == item.Id);
 
             // löytyikö kayttaja
-            if(user == null)
+            if(user == null || dbItem == null)
             {
                 return false;
             }
-            // onko kayttajanimi sama kun itemissä on merkattu owner
-            if(user.UserName == item.Owner)
+            // onko sama
+            if(user.Id == dbItem.Owner.Id)
             {
                 return true;
             }
             return false;
         }
 
-        public Task<bool> IsAllowed(string username, User user)
+        // kayttaja haluaa editoida käyttäjän tietoja
+        public async Task<bool> IsAllowed(string username, User user) // mitä vaan mitä kutsun tekijä lähettänyt
         {
-            throw new NotImplementedException();
+            User? dbUser = await _context.Users.Where(x => x.UserName == user.UserName).FirstOrDefaultAsync();
+
+            if (dbUser != null && dbUser.UserName == username)
+            {
+                return true;
+            }
+            return false;
         }
 
-        public Task<bool> IsAllowed(string username, ReservationDTO reservation)
+        public async Task<bool> IsAllowed(string username, ReservationDTO reservation)
         {
-            throw new NotImplementedException();
+            User? user = await _context.Users.Where(x => x.UserName == username).FirstOrDefaultAsync();
+            Reservation? dbReservation = await _context.Reservations.Include(i => i.Owner).FirstOrDefaultAsync(i => i.Id == reservation.Id);
+            
+            if(user == null || dbReservation == null)
+            {
+                return false;
+            }
+            // tarkistetaan myös omistaja id
+            if(user.Id == dbReservation.Owner.Id)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

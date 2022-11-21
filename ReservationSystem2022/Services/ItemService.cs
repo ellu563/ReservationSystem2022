@@ -6,7 +6,7 @@ namespace ReservationSystem2022.Services
 {
     public class ItemService : IItemService
     {
-        // (implement interface)
+        // service = toimintalogiikka
 
         // tarvitaan viittaus repositoryyn:
         public readonly IItemRepository _repository;
@@ -95,8 +95,7 @@ namespace ReservationSystem2022.Services
             newItem.Name = dto.Name; // arvot, eli laitetaan dto:n tiedot uuteen itemiin
             newItem.Description = dto.Description;
 
-            User owner = await _userRepository.GetUserAsync(dto.Owner);
-
+            User owner = await _userRepository.GetUserAsync(dto.Owner); 
             // owneria ei saadakkaan noin niinkun noi ylemmät, haetaan omistaja tietokannasta
             // User owner = _context.Users.Where(x => x.UserName == dto.Owner).FirstOrDefault();
 

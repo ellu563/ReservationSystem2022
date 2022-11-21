@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ReservationSystem2022.Middleware;
 using ReservationSystem2022.Models;
 using ReservationSystem2022.Services;
 
@@ -16,11 +19,13 @@ namespace ReservationSystem2022.Controllers
     {
         private readonly ReservationContext _context;
         private readonly IReservationService _service;
+        private readonly IUserAuthenticationService _authenticationService;
 
-        public ReservationsController(ReservationContext context,IReservationService service)
+        public ReservationsController(ReservationContext context,IReservationService service, IUserAuthenticationService authenticationService)
         {
             _context = context;
             _service = service;
+            _authenticationService = authenticationService;
         }
 
         // GET: api/Reservations
@@ -47,11 +52,21 @@ namespace ReservationSystem2022.Controllers
         // PUT: api/Reservations/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutReservation(long id, Reservation reservation)
+        [Authorize]
+
+        public async Task<IActionResult> PutReservation(long id, ReservationDTO reservation)
         {
             if (id != reservation.Id)
             {
                 return BadRequest();
+            }
+
+            // tarkista, onko oikeus muokata
+            bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, reservation);
+
+            if (!isAllowed)
+            {
+                return Unauthorized();
             }
 
             _context.Entry(reservation).State = EntityState.Modified;

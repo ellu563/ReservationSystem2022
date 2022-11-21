@@ -16,6 +16,7 @@
         {
             // onko avainta olemassa, onko avain headerissa
             // out var extractedApiKey = jos löytyy arvo, tähän tallennetaan se
+            // request = se pyyntö, response = vastaus
             if(!context.Request.Headers.TryGetValue(APIKEYNAME, out var extractedApiKey)) // headers = otsikkotiedot
             {
                 context.Response.StatusCode = 401; // ei löytynyt sitä

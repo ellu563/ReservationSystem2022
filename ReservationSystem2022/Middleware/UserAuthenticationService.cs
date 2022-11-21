@@ -24,6 +24,7 @@ namespace ReservationSystem2022.Middleware
             _context = context;
         }
 
+        // tekee salasanatarkastuksen
         public async Task<User> Authenticate(string username, string password)
         {
             // etitaan contextista, halutaan että UserName on sama kun username
@@ -52,6 +53,7 @@ namespace ReservationSystem2022.Middleware
             return user;
         }
 
+        // pääsynhallinta
         // onko talla kayttajanimella oikeus kasitella tata itemia
         public async Task<bool> IsAllowed(string username, ItemDTO item)
         {

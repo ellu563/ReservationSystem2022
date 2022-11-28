@@ -39,7 +39,7 @@ namespace ReservationSystem2022.Models
         public String? Description { get; set; } // voisi laittaa myös esim. oletusarvon get; set } = "Default value";
         [Required]
         public String? Owner { get; set; } // omistajan käyttäjänimi, ei tarvitse nyt olla User kun tulee verkon yli
-        public virtual List<Image>? Images { get; set; }
+        public virtual List<ImageDTO>? Images { get; set; } // haetaan imageDTO
 
     }
 }

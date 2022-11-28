@@ -16,7 +16,7 @@ namespace ReservationSystem2022.Repositories
             _context.Users.Add(user);
             try
             {
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(); // tallennetaan
             }
             catch(Exception e)
             {

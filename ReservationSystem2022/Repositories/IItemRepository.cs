@@ -9,5 +9,7 @@ namespace ReservationSystem2022.Repositories
         public Task<Item> AddItemAsync(Item item); 
         public Task<Item> UpdateItemAsync(Item item);
         public Task<Boolean> DeleteItemAsync(Item item);
+
+        public Task<Boolean> ClearImages(Item item); // miltä itemiltä poistetaan kuvat
     }
 }

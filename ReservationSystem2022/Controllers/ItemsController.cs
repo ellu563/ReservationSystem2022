@@ -24,7 +24,7 @@ namespace ReservationSystem2022.Controllers
 
         // oma kommentti: eli program.cs:ssä on esitelty mikä interface toteuttaa mikä luokka, ja näin päästään kiinni suoraan 
         // siihen ns. luokkaan, tai vaikka useampaan luokkaan,
-        // ei siis sinällään väliä mitä siellä luokassa toteutetaan, interface vaan ns. suorittaa sen luokan toteutuksen
+        // ei siis sinällään väliä mitä siellä luokassa toteutetaan, interface vaan ns. suorittaa sen luokan toteutuksen/tai voi ajatella myös toisinpäin
         // eli kaikki eri paikat voi käyttää sitä, kun se esitellään tuolleen interfacena, ja esitelty program.cs
         // nyt kun on vain yksi luokka siellä, se interface siis "toteuttaa" sen luokan
         // ja viiään se myös tuonne constructoriin.. tässä siis päästään kiinni sinne userauthenticationserviceen
@@ -84,7 +84,8 @@ namespace ReservationSystem2022.Controllers
                 return BadRequest(); // palauta badrequest
             }
 
-            // tarkista, onko oikeus muokata
+            // tarkista, onko oikeus muokata, tarvitaan sen käyttäjätunnus ja päästään siihen käsiksi tuolla claimilla
+            // eli käytännössä on oikeus muokata oma tekemää itemiä (put = muokkaus)
             bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, item);
 
             if(!isAllowed)
@@ -101,12 +102,20 @@ namespace ReservationSystem2022.Controllers
 
         }
 
-        // POST: api/Items = tätä muokattu
+        // POST: api/Items
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize]
         public async Task<ActionResult<ItemDTO>> PostItem(ItemDTO item)
         {
+            // tarkista, onko oikeus muokata
+            bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, item);
+
+            if (!isAllowed)
+            {
+                return Unauthorized();
+            }
+
             ItemDTO newItem = await _service.CreateItemAsync(item);
             if(newItem == null)
             {
@@ -123,6 +132,7 @@ namespace ReservationSystem2022.Controllers
         {
             ItemDTO item = new ItemDTO();
             item.Id = id;
+
             // tarkista, onko oikeus muokata
             bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, item);
 

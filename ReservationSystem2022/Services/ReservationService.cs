@@ -7,6 +7,11 @@ namespace ReservationSystem2022.Services
         public Task<ReservationDTO> CreateReservationAsync(ReservationDTO dto)
         {
             throw new NotImplementedException();
+
+         /* // HUOM. TÄÄ ON ITSE TEHTY KOODI ja kopsattu itemservicestä, muokattu nimet
+         Reservation newReservation = await DTOToReservation(dto);
+         await _repository.AddItemAsync(newReservation);
+         return ReservationToDTO(newReservation);*/
         }
 
         public Task<bool> DeleteReservationAsync(long id)

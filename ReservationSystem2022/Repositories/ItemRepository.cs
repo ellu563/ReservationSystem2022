@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ReservationSystem2022.Models;
+using System.Net;
 
 namespace ReservationSystem2022.Repositories
 {
@@ -29,6 +30,29 @@ namespace ReservationSystem2022.Repositories
             return item;
         }
 
+        // kuvien poistoa varten
+        public async Task<bool> ClearImages(Item item)
+        {
+            if(item != null) // onko kuvia
+            {
+                // käydään kaikki kuvat läpi
+                foreach(Image i in item.Images)
+                {
+                    _context.Images.Remove(i); // poistetaan se kuva
+                }
+                // tallennetaan muutokset
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch(Exception ex)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public async Task<bool> DeleteItemAsync(Item item)
         {
             try
@@ -46,12 +70,13 @@ namespace ReservationSystem2022.Repositories
         public async Task<Item> GetItemAsync(long id) // hakee id:n perusteella vain yhden
         {
             // palauttaa tietokannasta löytyvä itemi
-            return await _context.Items.FindAsync(id); // löytyykö tietokannasta ja palauttaa
+            return await _context.Items.Include(i => i.Images).FirstOrDefaultAsync(i => i.Id == id); // löytyykö tietokannasta ja palauttaa
+            // haetaan myös kuvat Includella
         }
 
         public async Task<IEnumerable<Item>> GetItemsAsync() // hakee kaikki
         {
-            return await _context.Items.ToListAsync(); // hakee koko listan sisällön
+            return await _context.Items.Include(i => i.Images).ToListAsync(); // hakee koko listan sisällön (ja imaget)
         }
 
         public async Task<Item> UpdateItemAsync(Item item) //suurinosa toiminnoista service tasolla

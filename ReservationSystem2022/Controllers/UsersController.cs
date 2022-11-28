@@ -36,6 +36,7 @@ namespace ReservationSystem2022.Controllers
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
             return await _context.Users.ToListAsync();
+            // tehdään ehkä tolleen samalla tavalla kun itemsControllerissa: return Ok(await _service.GetUsersAsync();
         }
 
         // GET: api/Users/5
@@ -65,7 +66,8 @@ namespace ReservationSystem2022.Controllers
             }
 
             // tarkista, onko oikeus muokata
-            bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, user);
+            bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, user); 
+            // huom; user, eli kun isallowedeja oli montaa eri parametreillä
 
             if (!isAllowed)
             {
@@ -98,14 +100,16 @@ namespace ReservationSystem2022.Controllers
         [HttpPost]
         public async Task<ActionResult<UserDTO>> PostUser(User user)
         {
-            UserDTO dto = await _service.CreateUserAsync(user);
+            UserDTO dto = await _service.CreateUserAsync(user); // eli täällä nyt käytetään tuota servicessä olevaa CreateUserAsync
 
             if(dto == null)
             {
-                return Problem();
+                return Problem(); // tallennuksessa menee joku vikaan
             }
 
-            return CreatedAtAction(nameof(PostUser), new { username = dto.UserName }, dto);
+            return CreatedAtAction(nameof(PostUser), new { username = dto.UserName }, dto); // eli palautetaan userDTO:n tiedot
+            // eli lähetään postilla: username, password, firstname, lastname
+            // mutta ei nähdä sit siellä esim. postmanin alhaalla "palautuksessa" sitä passwordia
         }
 
         // DELETE: api/Users/5

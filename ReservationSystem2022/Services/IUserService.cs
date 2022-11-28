@@ -4,7 +4,7 @@ namespace ReservationSystem2022.Services
 {
     public interface IUserService
     {
-        // salattua salasanaa varten
-        public Task<UserDTO> CreateUserAsync(User user);
+        // mm. salattua salasanaa varten
+        public Task<UserDTO> CreateUserAsync(User user); // palauttaa userDTO:n mutta saa userin
     }
 }

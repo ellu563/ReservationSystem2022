@@ -53,7 +53,6 @@ namespace ReservationSystem2022.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [Authorize]
-
         public async Task<IActionResult> PutReservation(long id, ReservationDTO reservation)
         {
             if (id != reservation.Id)
@@ -63,6 +62,7 @@ namespace ReservationSystem2022.Controllers
 
             // tarkista, onko oikeus muokata
             bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, reservation);
+            // ja täällä se on reservation (isallowed funktiota kun oli 3)
 
             if (!isAllowed)
             {

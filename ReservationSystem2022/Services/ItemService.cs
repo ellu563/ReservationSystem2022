@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ReservationSystem2022.Models;
 using ReservationSystem2022.Repositories;
+using System.Transactions;
 
 namespace ReservationSystem2022.Services
 {
@@ -33,6 +34,8 @@ namespace ReservationSystem2022.Services
             {
                 return false;
             }
+            // poistetaan myös kuvat
+            await _repository.ClearImages(oldItem);
             return await _repository.DeleteItemAsync(oldItem);
         }
 
@@ -74,7 +77,24 @@ namespace ReservationSystem2022.Services
             }
             oldItem.Name = item.Name; 
             oldItem.Description = item.Description;
-            oldItem.Images = item.Images;
+            
+            // onko kuvia tietokannassa, poistetaan vaan jos siellä on vanhoja kuvia, ja on tulossa uusia kuvia
+            if(oldItem.Images != null && item.Images != null)
+            {
+                await _repository.ClearImages(oldItem); // poistetaan vanhat kuvat jotta voidaan laittaa uudet
+            }
+            // uudet tiedot, onko siellä kuvia
+            if(item.Images != null)
+            {
+                oldItem.Images = new List<Image>();
+                foreach(ImageDTO i in item.Images)
+                {
+                    Image image = DTOToImage(i);
+                    image.Target = oldItem;
+                    oldItem.Images.Add(image);
+                }
+            }
+
             oldItem.accessCount++;
             // eli olditem on haettu tietokannasta, ja siihen on kopioitu kaikki kenttien arvot
             // nyt voidaan se tallentaa
@@ -103,8 +123,17 @@ namespace ReservationSystem2022.Services
             {
                 newItem.Owner = owner; // owner on nyt käyttäjä joka löydettiin
             }
+            // onko dto:ssa kuvia
+            if(dto.Images != null)
+            {
+                newItem.Images = new List<Image>(); // uusi lista kuvia
+                // lisätään kuvat listaan, yksi tai useampi
+                foreach(ImageDTO i in dto.Images)
+                {
+                    newItem.Images.Add(DTOToImage(i));
+                }
+            }
 
-            newItem.Images = dto.Images;
             newItem.accessCount = 0;
             return newItem;
         }
@@ -118,11 +147,36 @@ namespace ReservationSystem2022.Services
             dto.Id = item.Id;
             dto.Name = item.Name;
             dto.Description = item.Description;
-            dto.Images = item.Images;
+            // onko kuvia
+            if(item.Images != null)
+            {
+                dto.Images = new List<ImageDTO>();
+                foreach(Image i in item.Images)
+                {
+                    dto.Images.Add(ImageToDTO(i));
+                }
+            }
             if(item.Owner != null)
             {
                 dto.Owner = item.Owner.UserName;
             }
+            return dto;
+        }
+
+        // imagen ja dto:n väliset muutokset
+        private Image DTOToImage(ImageDTO dto)
+        {
+            Image image = new Image(); // luodaan
+            image.Url = dto.Url;
+            image.Description = dto.Description;
+            return image;
+        }
+        // image imageDTO:ksi
+        private ImageDTO ImageToDTO(Image image)
+        {
+            ImageDTO dto = new ImageDTO();
+            dto.Url = image.Url;
+            dto.Description = image.Description;
             return dto;
         }
     }

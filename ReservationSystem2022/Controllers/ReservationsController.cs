@@ -15,15 +15,16 @@ namespace ReservationSystem2022.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
+    // tää on nyt muokattu samalla tavalla kun toi itemscontroller
+
     public class ReservationsController : ControllerBase
     {
-        private readonly ReservationContext _context;
         private readonly IReservationService _service;
         private readonly IUserAuthenticationService _authenticationService;
 
-        public ReservationsController(ReservationContext context,IReservationService service, IUserAuthenticationService authenticationService)
+        public ReservationsController(IReservationService service, IUserAuthenticationService authenticationService)
         {
-            _context = context;
             _service = service;
             _authenticationService = authenticationService;
         }
@@ -37,9 +38,10 @@ namespace ReservationSystem2022.Controllers
 
         // GET: api/Reservations/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Reservation>> GetReservation(long id)
+        public async Task<ActionResult<ReservationDTO>> GetReservation(long id) // 653
         {
-            var reservation = await _context.Reservations.FindAsync(id);
+            var reservation = await _service.GetReservationAsync(id); // 653
+            // vanha: var reservation = await _context.Reservations.FindAsync(id);
 
             if (reservation == null)
             {
@@ -69,42 +71,91 @@ namespace ReservationSystem2022.Controllers
                 return Unauthorized();
             }
 
-            _context.Entry(reservation).State = EntityState.Modified;
-
-            try
+            // oma: 
+            ReservationDTO updatedReservation = await _service.UpdateReservationAsync(reservation); // jos on sama, lähetetään eteenpäin servicelle
+            if (updatedReservation == null)
             {
-                await _context.SaveChangesAsync();
+                return NotFound();
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ReservationExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
             return NoContent();
         }
+
+        /* vanha koodi: 
+        _context.Entry(reservation).State = EntityState.Modified;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!ReservationExists(id))
+            {
+                return NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        return NoContent();
+        }*/
+
 
         // POST: api/Reservations
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Reservation>> PostReservation(Reservation reservation)
+        public async Task<ActionResult<ReservationDTO>> PostReservation(ReservationDTO reservation)
         {
-            _context.Reservations.Add(reservation);
-            await _context.SaveChangesAsync();
+            // tarkista, onko oikeus muokata
+            bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, reservation);
 
-            return CreatedAtAction("GetReservation", new { id = reservation.Id }, reservation);
+            if (!isAllowed)
+            {
+                return Unauthorized();
+            }
+
+            ReservationDTO newReservation = await _service.CreateReservationAsync(reservation);
+
+            if (newReservation == null)
+            {
+                return Problem();
+            }
+
+            return CreatedAtAction("GetItem", new { id = newReservation.Id }, newReservation);
+
+            /* vanha, ylempi on oma muokattu itemscontrollerista
+             
+             _context.Reservations.Add(reservation);
+             await _context.SaveChangesAsync();
+
+             return CreatedAtAction("GetReservation", new { id = reservation.Id }, reservation);
+            */
         }
 
         // DELETE: api/Reservations/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteReservation(long id)
         {
+            ReservationDTO reservation = new ReservationDTO();
+            reservation.Id = id;
+
+            // tarkista, onko oikeus muokata
+            bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, reservation);
+
+            if (!isAllowed)
+            {
+                return Unauthorized();
+            }
+
+            if (await _service.DeleteReservationAsync(id))
+            {
+                return Ok();
+            }
+            return NotFound();
+
+            /* vanha
             var reservation = await _context.Reservations.FindAsync(id);
             if (reservation == null)
             {
@@ -115,11 +166,8 @@ namespace ReservationSystem2022.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+             */
         }
 
-        private bool ReservationExists(long id)
-        {
-            return _context.Reservations.Any(e => e.Id == id);
-        }
     }
 }

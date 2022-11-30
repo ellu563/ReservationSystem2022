@@ -42,7 +42,7 @@ namespace ReservationSystem2022.Controllers
         /// </summary>
         /// <returns>list of items</returns>
         [HttpGet]
-        [Authorize] // kaikki kayttajat ketka mennyt autentikoinni lapi voi kayttaa
+        [Authorize] // kaikki kayttajat ketka mennyt autentikoinni lapi voi kayttaa 
         public async Task<ActionResult<IEnumerable<ItemDTO>>> GetItems()
         {
             return Ok(await _service.GetItemsAsync()); // Ok=http 200

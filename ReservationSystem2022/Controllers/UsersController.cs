@@ -18,7 +18,7 @@ namespace ReservationSystem2022.Controllers
     public class UsersController : ControllerBase
     {
         // controlleri luodaan aina controllers kansioon, add new scaffolded item.. api controller with actions.. tähän valittu model: user
-        // tämän avulla voidaan esim. käyttää postmania (täällä crud toiminnot)
+        // tämän avulla voidaan esim. käyttää postmania (täällä crud toiminnot) 
 
         private readonly ReservationContext _context;
         private readonly IUserService _service;
@@ -33,7 +33,7 @@ namespace ReservationSystem2022.Controllers
 
         // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
         {
             return await _context.Users.ToListAsync();
             // tehdään ehkä tolleen samalla tavalla kun itemsControllerissa: return Ok(await _service.GetUsersAsync();

@@ -11,6 +11,7 @@
         public String? LastName { get; set; }
         public DateTime JoinDate { get; set; }
         public DateTime LoginDate { get; set; }
+
     }
 
     public class UserDTO

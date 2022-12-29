@@ -16,8 +16,6 @@ namespace ReservationSystem2022.Controllers
     [Route("api/[controller]")]
     [ApiController]
 
-    // tää on nyt muokattu samalla tavalla kun toi itemscontroller
-
     public class ReservationsController : ControllerBase
     {
         private readonly IReservationService _service;
@@ -37,11 +35,10 @@ namespace ReservationSystem2022.Controllers
         }
 
         // GET: api/Reservations/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ReservationDTO>> GetReservation(long id) // 653
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<ReservationDTO>> GetReservation(long id) 
         {
-            var reservation = await _service.GetReservationAsync(id); // 653
-            // vanha: var reservation = await _context.Reservations.FindAsync(id);
+            var reservation = await _service.GetReservationAsync(id); 
 
             if (reservation == null)
             {
@@ -106,6 +103,7 @@ namespace ReservationSystem2022.Controllers
         // POST: api/Reservations
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<ReservationDTO>> PostReservation(ReservationDTO reservation)
         {
             // tarkista, onko oikeus muokata
@@ -116,14 +114,14 @@ namespace ReservationSystem2022.Controllers
                 return Unauthorized();
             }
 
-            ReservationDTO newReservation = await _service.CreateReservationAsync(reservation);
+            reservation = await _service.CreateReservationAsync(reservation);
 
-            if (newReservation == null)
+            if (reservation == null)
             {
-                return Problem();
+                return BadRequest();
             }
 
-            return CreatedAtAction("GetItem", new { id = newReservation.Id }, newReservation);
+            return CreatedAtAction("GetReservation", new { id = reservation.Id }, reservation);
 
             /* vanha, ylempi on oma muokattu itemscontrollerista
              

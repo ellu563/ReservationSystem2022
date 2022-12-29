@@ -79,6 +79,16 @@ namespace ReservationSystem2022.Repositories
             return await _context.Items.Include(i => i.Images).ToListAsync(); // hakee koko listan sisällön (ja imaget)
         }
 
+        public async Task<IEnumerable<Item>> GetItemsAsync(User user)
+        {
+            return await _context.Items.Include(i => i.Owner).Where(x => x.Owner == user).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Item>> QueryItems(string query)
+        {
+            return await _context.Items.Include(i => i.Owner).Where(x => x.Name.Contains(query)).ToListAsync();
+        }
+
         public async Task<Item> UpdateItemAsync(Item item) //suurinosa toiminnoista service tasolla
         // eli service huolehtii että kopioidaan muuttuneet tiedot,ja repository katsoo että muutokset 
         // tallennetaan

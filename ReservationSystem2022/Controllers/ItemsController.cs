@@ -38,7 +38,7 @@ namespace ReservationSystem2022.Controllers
 
         // GET: api/Items
         /// <summary>
-        /// Get all items from database
+        /// Get all items from the system
         /// </summary>
         /// <returns>list of items</returns>
         [HttpGet]
@@ -46,6 +46,32 @@ namespace ReservationSystem2022.Controllers
         public async Task<ActionResult<IEnumerable<ItemDTO>>> GetItems()
         {
             return Ok(await _service.GetItemsAsync()); // Ok=http 200
+        }
+
+        // haetaan usernamen perusteella
+        // GET: api/Items/user/username
+        /// <summary>
+        /// Get all items from the system matching user username
+        /// </summary>
+        /// <returns>list of items</returns>
+        [HttpGet("user/{username}")]
+        [Authorize]
+        public async Task<ActionResult<ItemDTO>> GetItems(String username)
+        {
+            return Ok(await _service.GetItemsAsync(username));
+        }
+
+        // lisä: haetaan hakutermin perusteella
+        // GET: api/Items/query
+        /// <summary>
+        /// Get all items from the system matching given query
+        /// </summary>
+        /// <returns>list of items</returns>
+        [HttpGet("{query}")]
+        [Authorize]
+        public async Task<ActionResult<ItemDTO>> QueryItems(String query)
+        {
+            return Ok(await _service.QueryItemsAsync(query));
         }
 
         // GET: api/Items/5
@@ -56,8 +82,8 @@ namespace ReservationSystem2022.Controllers
         /// <returns>Data for single item</returns>
         /// <response code="200">Returns the item</response>
         /// <response code="404">Item not found from database</response>
-       
-        [HttpGet("{id}")]
+
+        [HttpGet("{id:int}")]
         [AllowAnonymous]
         public async Task<ActionResult<ItemDTO>> GetItem(long id) // palauttaa itemDTO:n, haetaan id:n perusteella
         {

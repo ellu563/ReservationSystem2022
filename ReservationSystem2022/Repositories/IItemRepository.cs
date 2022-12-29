@@ -6,6 +6,10 @@ namespace ReservationSystem2022.Repositories
     {
         public Task<Item> GetItemAsync(long id); // get yhdelle
         public Task<IEnumerable<Item>> GetItemsAsync(); // get koko listalle
+
+        public Task<IEnumerable<Item>> GetItemsAsync(User user);
+
+        public Task<IEnumerable<Item>> QueryItems(String query);
         public Task<Item> AddItemAsync(Item item); 
         public Task<Item> UpdateItemAsync(Item item);
         public Task<Boolean> DeleteItemAsync(Item item);

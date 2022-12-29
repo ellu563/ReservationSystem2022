@@ -33,7 +33,7 @@ namespace ReservationSystem2022.Controllers
 
         // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<User>>> GetUsers() // huom tässä oli joku virhe ni tää on nyt se original
         {
             return await _context.Users.ToListAsync();
             // tehdään ehkä tolleen samalla tavalla kun itemsControllerissa: return Ok(await _service.GetUsersAsync();

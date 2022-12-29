@@ -1,32 +1,74 @@
-﻿using ReservationSystem2022.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using ReservationSystem2022.Models;
 
 namespace ReservationSystem2022.Repositories
 {
-    public class ReservationRepository : IReservationRepository // pistetään toi perimisluokka, ja implement interfacella saahaa toi og sisältö
+    public class ReservationRepository : IReservationRepository // perii
     {
-        public Task<Reservation> AddReservationAsync(Reservation reservation)
+        private readonly ReservationContext _context;
+
+        public ReservationRepository(ReservationContext context)
         {
-            throw new NotImplementedException();
+            _context = context;
         }
 
-        public Task<bool> DeleteReservationAsync(Reservation reservation)
+        public async Task<Reservation> AddReservationAsync(Reservation reservation)
         {
-            throw new NotImplementedException();
+            _context.Reservations.Add(reservation);
+            try
+            {
+                await _context.SaveChangesAsync(); // tallennus
+            }
+            catch(Exception)
+            {
+                return null;
+            }
+            return reservation;
         }
 
-        public Task<Reservation> GetReservationAsync(long id)
+        public async Task<bool> DeleteReservationAsync(Reservation reservation)
         {
-            throw new NotImplementedException();
+            try
+            {
+                _context.Reservations.Remove(reservation); // poistetaan
+                await _context.SaveChangesAsync(); // saadaan päivitettyä tietokantaan myös tieto
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            return true;
         }
 
-        public Task<IEnumerable<Reservation>> GetReservationAsync()
+        // hae 1 varaus, huom. tehty itemin perusteella 
+        public async Task<Reservation> GetReservationAsync(long id)
         {
-            throw new NotImplementedException();
+            return await _context.Reservations.FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        public Task<Reservation> UpdateReservationAsync(Reservation reservation)
+        // tehty itemin perusteella 
+        public async Task<IEnumerable<Reservation>> GetReservationsAsync()
         {
-            throw new NotImplementedException();
+            return await _context.Reservations.ToListAsync();
+        }
+
+        // haetaan tietyn aikavalin varausta
+        public async Task<IEnumerable<Reservation>> GetReservationsAsync(Item target, DateTime start, DateTime end)
+        {
+            return await _context.Reservations.Include(i => i.Owner).Include(x => x.Target).Where(x => x.Target == target && ((x.StartTime >= start && x.StartTime < end) || (x.EndTime >= start && x.EndTime < end) || (x.StartTime <= start && x.EndTime >= end))).ToListAsync();
+        }
+
+        public async Task<Reservation> UpdateReservationAsync(Reservation reservation)
+        {
+            try
+            {
+                await _context.SaveChangesAsync(); // tallennus
+            }
+            catch (Exception ex)
+            {
+                return null; // muutosten tallentaminen ei onnistunut
+            }
+            return reservation; // "tallennus on onnistunut"
         }
     }
 }

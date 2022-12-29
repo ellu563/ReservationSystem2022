@@ -1,59 +1,127 @@
-﻿using NuGet.Protocol.Core.Types;
+﻿using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 using ReservationSystem2022.Models;
 using ReservationSystem2022.Repositories;
+using System.Linq.Expressions;
 
 namespace ReservationSystem2022.Services
 {
     public class ReservationService : IReservationService
     {
-        public readonly IReservationRepository _reservationRepository;
-        public readonly IItemRepository _itemRepository;
+        public readonly IReservationRepository _repository;
         private readonly IUserRepository _userRepository;
+        public readonly IItemRepository _itemRepository;
+        
 
         public ReservationService(IReservationRepository repository, IUserRepository userRepository, IItemRepository itemRepository)
         {
-            _reservationRepository = repository;
+            _repository = repository;
             _userRepository = userRepository;
             _itemRepository = itemRepository;
         }
 
-        public Task<ReservationDTO> CreateReservationAsync(ReservationDTO dto)
+        public async Task<ReservationDTO> CreateReservationAsync(ReservationDTO dto)
         {
-            /*
-            Reservation newReservation = await DTOToReservation(dto);
-            await _repository.AddItemAsync(newReservation);
+            if(dto.StartTime >= dto.EndTime)
+            {
+                return null;
+            }
+            // onko item olemassa
+            Item target = await _itemRepository.GetItemAsync(dto.Target);
+
+            // jos ei loydy ei voida tehda varausta
+            if(target == null) {
+                return null;
+            }
+            // onko silla aikavalilla varauksia, toivotaan siis etta ei ole yhtaan
+            IEnumerable<Reservation> reservations = await _repository.GetReservationsAsync(target, dto.StartTime, dto.EndTime);
+            if(reservations.Count() > 0)
+            {
+                return null;
+            }
+            Reservation newReservation = await DTOToReservationAsync(dto);
+            newReservation = await _repository.AddReservationAsync(newReservation);
+
             return ReservationToDTO(newReservation);
-            */
-            throw new NotImplementedException();
         }
 
-        public Task<bool> DeleteReservationAsync(long id)
+        public async Task<bool> DeleteReservationAsync(long id)
         {
-            throw new NotImplementedException();
+            Reservation oldRes = await _repository.GetReservationAsync(id);
+            if (oldRes == null)
+            {
+                return false;
+            }
+            return await _repository.DeleteReservationAsync(oldRes);
         }
 
-        public Task<ReservationDTO> GetReservationAsync(long id)
+        // hae id:n perusteella
+        public async Task<ReservationDTO> GetReservationAsync(long id)
         {
-            throw new NotImplementedException();
+            Reservation res = await _repository.GetReservationAsync(id); 
+
+            if (res != null) 
+            {
+                return ReservationToDTO(res); 
+            }
+            return null; 
         }
 
-        public Task<IEnumerable<ReservationDTO>> GetReservationsAsync()
+        // hae kaikki reservationit
+        public async Task<IEnumerable<ReservationDTO>> GetReservationsAsync()
         {
-            throw new NotImplementedException();
+            IEnumerable<Reservation> reservations = await _repository.GetReservationsAsync(); 
+            List<ReservationDTO> result = new List<ReservationDTO>(); 
+            foreach (Reservation i in reservations) 
+            {
+                result.Add(ReservationToDTO(i)); 
+            }
+            return result; // palautetaan
         }
 
-        public Task<ReservationDTO> UpdateReservationAsync(ReservationDTO reservation)
+        public async Task<ReservationDTO> UpdateReservationAsync(ReservationDTO reservation)
         {
-            throw new NotImplementedException();
+            Reservation oldRes = await _repository.GetReservationAsync(reservation.Id); 
+            // haetaan id:n perusteella
+
+            if (oldRes == null) // ei välttämättä löydy kyseistä, jos ei löydy tietokannasta ei ole mitään mitä muokata
+            {
+                return null;
+            }
+            oldRes.Id = reservation.Id;
+
+            // en oo iha varma tasta
+            User owner = await _userRepository.GetUserAsync(reservation.Owner);
+            Item target = await _itemRepository.GetItemAsync(reservation.Target);
+
+            if (owner != null)
+            {
+                oldRes.Owner = owner;
+            }
+
+            if (target != null)
+            {
+                oldRes.Target = target;
+            }
+            // tahan asti
+
+            oldRes.StartTime = reservation.StartTime;
+            oldRes.EndTime = reservation.EndTime;
+
+            // nyt kun kaikkiin kenttiin tallennettu uusi arvo niin updatetaan se tieto
+            Reservation updatedRes = await _repository.UpdateReservationAsync(oldRes);
+            if (updatedRes == null) // joku on mennyt vikaan
+            {
+                return null;
+            }
+            return ReservationToDTO(updatedRes);
         }
 
-
-        // muokattu dto-to-itemin perusteella, ei ainakaa näytä erroria
-        private async Task<Reservation> DTOToReservation(ReservationDTO dto)
+        private async Task<Reservation> DTOToReservationAsync(ReservationDTO dto)
         {
-            Reservation newReservation = new Reservation(); 
-
-            // pitää laittaa näin eikä niin ku siellä itemdto:ssa kun nää erilaisia
+            Reservation newReservation = new Reservation();
+            newReservation.Id = dto.Id;
+            
             User owner = await _userRepository.GetUserAsync(dto.Owner);
             Item target = await _itemRepository.GetItemAsync(dto.Target);
             newReservation.StartTime = dto.StartTime;
@@ -68,32 +136,28 @@ namespace ReservationSystem2022.Services
             {
                 newReservation.Target = target;
             }
+
             return newReservation;
         }
-
-        // toisinpäin, muokattu myös taskiksi entiiä pitääkö KESKEN
         
-        private async Task<ReservationDTO> ReservationToDTO(Reservation reservation)
+        private ReservationDTO ReservationToDTO(Reservation res)
         {
             ReservationDTO dto = new ReservationDTO();
 
-            dto.Id = reservation.Id;
-            dto.Owner = reservation.Owner.UserName;
-
-            /* kesken: tunti jäi tähän, 30.11. muokattu
-
-            if (owner != null)
+            dto.Id = res.Id;
+            if(res.Owner != null)
             {
-                dto.Owner = owner; // owner on nyt käyttäjä joka löydettiin
+                dto.Owner = res.Owner.UserName;
             }
-
-            dto.Name = reservation.Name;
-            dto.Description = reservation.Description;
-
-            if (reservation.Owner != null)
+            // huom. tassa on viela joku ongelma etta se nayttaa nollaa
+            if(res.Target != null)
             {
-                dto.Owner = item.Owner.UserName;
-            } */
+                dto.Target = res.Target.Id;
+            }
+            
+            dto.StartTime = res.StartTime;
+            dto.EndTime = res.EndTime;
+
             return dto;
         }
     }

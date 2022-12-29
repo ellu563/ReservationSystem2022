@@ -6,5 +6,6 @@ namespace ReservationSystem2022.Services
     {
         // mm. salattua salasanaa varten
         public Task<UserDTO> CreateUserAsync(User user); // palauttaa userDTO:n mutta saa userin
+
     }
 }

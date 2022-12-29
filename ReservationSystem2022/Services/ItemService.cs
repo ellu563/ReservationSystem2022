@@ -107,6 +107,34 @@ namespace ReservationSystem2022.Services
             // eli tehdään siitä dto ja lähetetään controlleriin
         }
 
+        public async Task<IEnumerable<ItemDTO>> QueryItemsAsync(String query)
+        {
+           IEnumerable<Item> items = await _repository.QueryItems(query);
+           List<ItemDTO> itemDTOs = new List<ItemDTO>();
+            foreach(Item i in items)
+            {
+                itemDTOs.Add(ItemToDTO(i));
+            }
+            return itemDTOs;
+        }
+
+        // usernamea varten
+        public async Task<IEnumerable<ItemDTO>> GetItemsAsync(string username)
+        {
+            User owner = await _userRepository.GetUserAsync(username);
+            if(owner == null)
+            {
+                return null;
+            }
+            IEnumerable<Item> items = await _repository.GetItemsAsync(owner);
+            List<ItemDTO> itemDTOs=new List<ItemDTO>();
+            foreach(Item i in items)
+            {
+                itemDTOs.Add(ItemToDTO(i));
+            }
+            return itemDTOs;
+        }
+
         // eli verkon yli on tullut ItemDTO, tämä funktio siis siirtää ne tiedot item -muotoiseksi, joka siis voidaan vaikka..
         // tallentaa tietokantaan
         private async Task<Item> DTOToItem(ItemDTO dto)
@@ -179,5 +207,6 @@ namespace ReservationSystem2022.Services
             dto.Description = image.Description;
             return dto;
         }
+
     }
 }

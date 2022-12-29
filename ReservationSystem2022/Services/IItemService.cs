@@ -9,6 +9,10 @@ namespace ReservationSystem2022.Services
         public Task<ItemDTO> GetItemAsync(long id);
         public Task<IEnumerable<ItemDTO>> GetItemsAsync();
 
+        public Task<IEnumerable<ItemDTO>> GetItemsAsync(String username);
+
+        public Task<IEnumerable<ItemDTO>> QueryItemsAsync(String query);
+
         // ottaa itemdton vastaan
         public Task<ItemDTO> UpdateItemAsync(ItemDTO item);
 

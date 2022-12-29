@@ -8,7 +8,9 @@ namespace ReservationSystem2022.Repositories
     // pitää olla esitelty program.cs:ssä mitä palveluita on ja sieltä osataan heittää viittaus sinne mistä sitä pyydetään
     { 
         public Task<Reservation> GetReservationAsync(long id); // get yhdelle
-        public Task<IEnumerable<Reservation>> GetReservationAsync(); // get koko listalle
+        public Task<IEnumerable<Reservation>> GetReservationsAsync(); // get koko listalle
+        public Task<IEnumerable<Reservation>> GetReservationsAsync(Item target, DateTime start, DateTime end);
+
         public Task<Reservation> AddReservationAsync(Reservation reservation);
         public Task<Reservation> UpdateReservationAsync(Reservation reservation);
         public Task<Boolean> DeleteReservationAsync(Reservation reservation);

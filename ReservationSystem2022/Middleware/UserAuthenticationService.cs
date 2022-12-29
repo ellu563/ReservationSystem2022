@@ -107,7 +107,15 @@ namespace ReservationSystem2022.Middleware
             // katotaan onko tietokannassa tälle merkattu tuo varaus
             Reservation? dbReservation = await _context.Reservations.Include(i => i.Owner).FirstOrDefaultAsync(i => i.Id == reservation.Id);
             
-            if(user == null || dbReservation == null)
+            if(user == null)
+            {
+                return false;
+            }
+            if(dbReservation == null && reservation.Owner == user.UserName)
+            {
+                return true;
+            }
+            if(dbReservation == null)
             {
                 return false;
             }

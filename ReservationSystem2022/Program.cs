@@ -60,7 +60,15 @@ builder.Services.AddSwaggerGen(options =>
         options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
-
+// frontendia varten
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod();
+            });
+});
 
 var app = builder.Build();
 
@@ -71,6 +79,8 @@ if (app.Environment.IsDevelopment()) // kehitysversiossa
     app.UseSwagger();
     app.UseSwaggerUI(); 
 }
+
+app.UseCors();
 
 app.UseHttpsRedirection();
 

@@ -28,6 +28,7 @@ namespace ReservationSystem2022.Controllers
         // eli kaikki eri paikat voi käyttää sitä, kun se esitellään tuolleen interfacena, ja esitelty program.cs
         // nyt kun on vain yksi luokka siellä, se interface siis "toteuttaa" sen luokan
         // ja viiään se myös tuonne constructoriin.. tässä siis päästään kiinni sinne userauthenticationserviceen
+
         private readonly IUserAuthenticationService _authenticationService;
 
         public ItemsController(IItemService service, IUserAuthenticationService authenticationService) // ottaa vastaan ja muistiin
@@ -42,7 +43,7 @@ namespace ReservationSystem2022.Controllers
         /// </summary>
         /// <returns>list of items</returns>
         [HttpGet]
-        [Authorize] // kaikki kayttajat ketka mennyt autentikoinni lapi voi kayttaa 
+        [Authorize] // kaikki kayttajat ketka mennyt autentikoinnin lapi voivat kayttaa 
         public async Task<ActionResult<IEnumerable<ItemDTO>>> GetItems()
         {
             return Ok(await _service.GetItemsAsync()); // Ok=http 200
@@ -100,6 +101,12 @@ namespace ReservationSystem2022.Controllers
 
         // PUT: api/Items/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Updates your item based on id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         [Authorize] // vaaditaan
         public async Task<IActionResult> PutItem(long id, ItemDTO item)
@@ -130,6 +137,11 @@ namespace ReservationSystem2022.Controllers
 
         // POST: api/Items
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Posts a new item
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
         [HttpPost]
         [Authorize]
         public async Task<ActionResult<ItemDTO>> PostItem(ItemDTO item)
@@ -152,6 +164,11 @@ namespace ReservationSystem2022.Controllers
         }
 
         // DELETE: api/Items/5
+        /// <summary>
+        /// Deletes item using id number
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         [Authorize] // saa omat iteminsä poistaa
         public async Task<IActionResult> DeleteItem(long id)

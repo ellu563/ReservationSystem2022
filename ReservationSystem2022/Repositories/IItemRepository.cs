@@ -7,6 +7,7 @@ namespace ReservationSystem2022.Repositories
         public Task<Item> GetItemAsync(long id); // get yhdelle
         public Task<IEnumerable<Item>> GetItemsAsync(); // get koko listalle
 
+        // tassakii haetaa usernamen perusteella talleen
         public Task<IEnumerable<Item>> GetItemsAsync(User user);
 
         public Task<IEnumerable<Item>> QueryItems(String query);

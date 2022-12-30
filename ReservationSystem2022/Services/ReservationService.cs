@@ -89,21 +89,23 @@ namespace ReservationSystem2022.Services
                 return null;
             }
             oldRes.Id = reservation.Id;
-
-            // en oo iha varma tasta
+           
+            // ?
             User owner = await _userRepository.GetUserAsync(reservation.Owner);
             Item target = await _itemRepository.GetItemAsync(reservation.Target);
 
-            if (owner != null)
+            if (owner == null)
             {
-                oldRes.Owner = owner;
+                return null;
             }
+            oldRes.Owner = owner;
 
             if (target != null)
             {
-                oldRes.Target = target;
+                return null;
             }
-            // tahan asti
+            oldRes.Target = target;
+            // ..? 
 
             oldRes.StartTime = reservation.StartTime;
             oldRes.EndTime = reservation.EndTime;
@@ -150,6 +152,7 @@ namespace ReservationSystem2022.Services
                 dto.Owner = res.Owner.UserName;
             }
             // huom. tassa on viela joku ongelma etta se nayttaa nollaa
+            // menee kantaan oikein mutta ei nayta postmanissa
             if(res.Target != null)
             {
                 dto.Target = res.Target.Id;
@@ -160,5 +163,7 @@ namespace ReservationSystem2022.Services
 
             return dto;
         }
+
+
     }
 }

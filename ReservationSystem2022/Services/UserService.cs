@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.EntityFrameworkCore;
 using ReservationSystem2022.Models;
 using ReservationSystem2022.Repositories;
 using System.Security.Cryptography;
@@ -43,7 +44,7 @@ namespace ReservationSystem2022.Services
                 Password = hashedPassWord,
                 JoinDate = DateTime.Now
             };
-
+          
             newUser = await _repository.AddUserAsync(newUser); // heitetään repositorylle ja tallennetaan kantaan
 
             if(newUser == null){ // tarkistetaan
@@ -52,27 +53,42 @@ namespace ReservationSystem2022.Services
             return UserToDTO(newUser);
         }
 
-        public Task<bool> DeleteUserAsync(long id)
+        // poistetaan id:n perusteella
+        public async Task<bool> DeleteUserAsync(long id) 
         {
-            // tää tehty ite mut tää tarvii ton getuserasyncin toimimaan
-            /*
-            User oldUser = await _repository.GetUserAsync(id); // taalla taas taa id ongelma
+            User oldUser = await _repository.GetUserIdAsync(id); 
             if (oldUser == null)
             {
                 return false;
             }
             return await _repository.DeleteUserAsync(oldUser);
-            */
-            throw new NotImplementedException();
         }
 
-        // hae 1
-        public Task<UserDTO> GetUserAsync(long id)
+        // hae usernamen perusteella
+        public async Task<UserDTO> GetUserAsync(string userName) // tanne vaihdettu myos
         {
-            throw new NotImplementedException();
+            User user = await _repository.GetUserAsync(userName); // ..service kutsuu repositorya
+
+            if (user != null) // tarkistetaan löytyykö sieltä mitään
+            {
+                return UserToDTO(user); // jos löytyy niin tehdään siitä DTO
+            }
+            return null; // jos ei ole löydetty, palautetaan null
         }
 
-        // nyt tehty ite, toi usertodto ei vissii toimi ku se nayttaa ne salikset ja muut
+        // haetaan id:n perusteella
+        public async Task<UserDTO> GetUserIdAsync(long id)
+        {
+            User user = await _repository.GetUserIdAsync(id); // ..service kutsuu repositorya
+
+            if (user != null) // tarkistetaan löytyykö sieltä mitään
+            {
+                return UserToDTO(user); // jos löytyy niin tehdään siitä DTO
+            }
+            return null; // jos ei ole löydetty, palautetaan null
+        }
+
+        // hae kaikki userit
         public async Task<IEnumerable<UserDTO>> GetUsersAsync()
         {
             IEnumerable<User> users = await _repository.GetUsersAsync();
@@ -84,12 +100,31 @@ namespace ReservationSystem2022.Services
             return result; // palautetaan
         }
 
-        public Task<UserDTO> UpdateUserAsync(UserDTO user)
+        public async Task<UserDTO> UpdateUserAsync(User user)
         {
-            throw new NotImplementedException();
+            User oldUser = await _repository.GetUserAsync(user.UserName); // user.UserName?
+
+            if (oldUser == null) 
+            {
+                return null;
+            }
+           
+            oldUser.UserName = user.UserName;
+            oldUser.FirstName = user.FirstName;
+            oldUser.LastName = user.LastName;
+            oldUser.JoinDate = user.JoinDate;
+            oldUser.LoginDate = user.LoginDate;
+
+            // nyt kun kaikkiin kenttiin tallennettu uusi arvo niin updatetaan se tieto
+            User updatedRes = await _repository.UpdateUserAsync(oldUser);
+            if (updatedRes == null) // joku on mennyt vikaan
+            {
+                return null;
+            }
+            return UserToDTO(updatedRes);
         }
 
-        // tehty nyt vasta en oo iha varma nyt tasta
+        // tätä ei käytetä missään
         private User DTOToUser(UserDTO user)
         {
             User newUser = new User(); // luodaan uusi käyttäjä olio ja sille noi kentät
@@ -126,7 +161,7 @@ namespace ReservationSystem2022.Services
             return newUser;
         }
 
-        // tehty aiemmin
+        // valmis
         private UserDTO UserToDTO(User user) // muutetaan Userista DTO:ksi
         {
             UserDTO dto = new UserDTO(); // tehdään uusi

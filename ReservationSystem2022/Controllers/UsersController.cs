@@ -17,50 +17,79 @@ namespace ReservationSystem2022.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        // controlleri luodaan aina controllers kansioon, add new scaffolded item.. api controller with actions.. tähän valittu model: user
-        // tämän avulla voidaan esim. käyttää postmania (täällä crud toiminnot) 
-
-        private readonly ReservationContext _context;
+        // controller luodaan aina controllers kansioon, add new scaffolded item.. api controller with actions.. tähän valittu model: user
         private readonly IUserService _service;
         private readonly IUserAuthenticationService _authenticationService;
 
-        public UsersController(ReservationContext context, IUserService service, IUserAuthenticationService authenticationService)
+        public UsersController(IUserService service, IUserAuthenticationService authenticationService)
         {
-            _context = context;
             _service = service;
             _authenticationService = authenticationService;
         }
 
         // GET: api/Users
+        /// <summary>
+        /// Get all users from the system
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers() // huom tässä oli joku virhe ni tää on nyt se original
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<User>>> GetUsers() 
         {
-            return await _context.Users.ToListAsync();
-            // tehdään ehkä tolleen samalla tavalla kun itemsControllerissa: return Ok(await _service.GetUsersAsync();
+            return Ok(await _service.GetUsersAsync());
         }
 
-        // GET: api/Users/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(long id)
+        // GET: api/Users/user/username
+        /// <summary>
+        /// Gets users info based on username
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
+        [HttpGet("user/{userName}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<UserDTO>> GetUser(string userName)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _service.GetUserAsync(userName);
 
             if (user == null)
             {
                 return NotFound();
             }
-
             return user;
         }
 
-        // PUT: api/Users/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        [Authorize]
-
-        public async Task<IActionResult> PutUser(long id, User user)
+        // GET: api/Users/5
+        /// <summary>
+        /// Gets user by id number
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<UserDTO>> GetUserById(long id)
         {
-            if (id != user.Id)
+            var user = await _service.GetUserIdAsync(id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return user;
+        }
+
+        // PUT: api/Users/user/username
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// You can update your users info
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        [HttpPut("user/{userName}")]
+        [Authorize]
+        public async Task<IActionResult> PutUser(string userName, User user)
+        {
+            if (userName != user.UserName)
             {
                 return BadRequest();
             }
@@ -73,31 +102,26 @@ namespace ReservationSystem2022.Controllers
             {
                 return Unauthorized();
             }
-
-            _context.Entry(user).State = EntityState.Modified;
-
-            try
+            
+            UserDTO updatedUser = await _service.UpdateUserAsync(user); // jos on sama, lähetetään eteenpäin servicelle
+            if (updatedUser == null)
             {
-                await _context.SaveChangesAsync();
+                return NotFound();
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            
 
             return NoContent();
         }
 
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Post a new User
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<UserDTO>> PostUser(User user)
         {
             UserDTO dto = await _service.CreateUserAsync(user); // eli täällä nyt käytetään tuota servicessä olevaa CreateUserAsync
@@ -112,25 +136,34 @@ namespace ReservationSystem2022.Controllers
             // mutta ei nähdä sit siellä esim. postmanin alhaalla "palautuksessa" sitä passwordia
         }
 
-        // DELETE: api/Users/5
-        [HttpDelete("{id}")]
+        // DELETE: api/Users/id
+        /// <summary>
+        /// Delete your user by id number
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpDelete("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> DeleteUser(long id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
+            User userDel = new User();
+            userDel.Id = id;
+
+            // tassa joku vika ?
+            // tarkista, onko oikeus muokata
+            bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, userDel);
+
+            if (!isAllowed)
             {
-                return NotFound();
+                return Unauthorized();
             }
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            if (await _service.DeleteUserAsync(id))
+            {
+                return Ok();
+            }
+            return NotFound();
         }
 
-        private bool UserExists(long id)
-        {
-            return _context.Users.Any(e => e.Id == id);
-        }
     }
 }

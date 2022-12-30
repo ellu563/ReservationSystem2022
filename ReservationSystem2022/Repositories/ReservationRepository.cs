@@ -40,13 +40,13 @@ namespace ReservationSystem2022.Repositories
             return true;
         }
 
-        // hae 1 varaus, huom. tehty itemin perusteella 
+        // hae 1 varaus
         public async Task<Reservation> GetReservationAsync(long id)
         {
             return await _context.Reservations.FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        // tehty itemin perusteella 
+        // hae kaikki varaukset
         public async Task<IEnumerable<Reservation>> GetReservationsAsync()
         {
             return await _context.Reservations.ToListAsync();

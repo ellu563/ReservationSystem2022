@@ -2,7 +2,7 @@
 {
     public class ApiKeyMiddleware
     {
-        // tarvitaan constructori joka ottaa RequestDeleaten vastaan
+        // tarvitaan constructor joka ottaa RequestDeleaten vastaan
 
         private readonly RequestDelegate _next;
         private const string APIKEYNAME = "ApiKey"; // avaimen kenttä on nimetty näin
@@ -40,6 +40,6 @@
             await _next(context);
         } 
 
-        // postmaniin lisatty ApiKey (headers kohtaan ja sinne se key) sit voidaan get ni toimii
+        // postmaniin lisatty ApiKey (headers kohtaan ja sinne se key) sit voidaan get niin toimii
     }
 }

@@ -28,14 +28,25 @@ namespace ReservationSystem2022.Controllers
         }
 
         // GET: api/Reservations
+        /// <summary>
+        /// Get all the reservations
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<Reservation>>> GetReservations()
         {
             return Ok(await _service.GetReservationsAsync());
         }
 
         // GET: api/Reservations/5
+        /// <summary>
+        /// Gets your spesific reservation using id number
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id:int}")]
+        [Authorize]
         public async Task<ActionResult<ReservationDTO>> GetReservation(long id) 
         {
             var reservation = await _service.GetReservationAsync(id); 
@@ -50,7 +61,13 @@ namespace ReservationSystem2022.Controllers
 
         // PUT: api/Reservations/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        /// <summary>
+        /// Update your reservation using id number
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="reservation"></param>
+        /// <returns></returns>
+        [HttpPut("{id:int}")]
         [Authorize]
         public async Task<IActionResult> PutReservation(long id, ReservationDTO reservation)
         {
@@ -102,6 +119,11 @@ namespace ReservationSystem2022.Controllers
 
         // POST: api/Reservations
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Post a new reservation
+        /// </summary>
+        /// <param name="reservation"></param>
+        /// <returns></returns>
         [HttpPost]
         [Authorize]
         public async Task<ActionResult<ReservationDTO>> PostReservation(ReservationDTO reservation)
@@ -123,7 +145,7 @@ namespace ReservationSystem2022.Controllers
 
             return CreatedAtAction("GetReservation", new { id = reservation.Id }, reservation);
 
-            /* vanha, ylempi on oma muokattu itemscontrollerista
+            /* vanha
              
              _context.Reservations.Add(reservation);
              await _context.SaveChangesAsync();
@@ -133,7 +155,13 @@ namespace ReservationSystem2022.Controllers
         }
 
         // DELETE: api/Reservations/5
-        [HttpDelete("{id}")]
+        /// <summary>
+        /// Delete your reservation using id number
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpDelete("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> DeleteReservation(long id)
         {
             ReservationDTO reservation = new ReservationDTO();

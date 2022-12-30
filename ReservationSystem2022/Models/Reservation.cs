@@ -29,6 +29,4 @@
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
     }
-
-    // tämän jälkeen tehty interface IReservationRepo, ja luokka ReservationRepo
 }

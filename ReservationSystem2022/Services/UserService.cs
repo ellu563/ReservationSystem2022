@@ -53,17 +53,6 @@ namespace ReservationSystem2022.Services
             return UserToDTO(newUser);
         }
 
-        // poistetaan id:n perusteella
-        public async Task<bool> DeleteUserAsync(long id) 
-        {
-            User oldUser = await _repository.GetUserIdAsync(id); 
-            if (oldUser == null)
-            {
-                return false;
-            }
-            return await _repository.DeleteUserAsync(oldUser);
-        }
-
         // hae usernamen perusteella
         public async Task<UserDTO> GetUserAsync(string userName) // tanne vaihdettu myos
         {
@@ -100,6 +89,7 @@ namespace ReservationSystem2022.Services
             return result; // palautetaan
         }
 
+        // paivitetaan useria
         public async Task<UserDTO> UpdateUserAsync(User user)
         {
             User oldUser = await _repository.GetUserAsync(user.UserName); // user.UserName?
@@ -122,6 +112,17 @@ namespace ReservationSystem2022.Services
                 return null;
             }
             return UserToDTO(updatedRes);
+        }
+
+        // poistetaan id:n perusteella
+        public async Task<bool> DeleteUserAsync(long id)
+        {
+            User oldUser = await _repository.GetUserIdAsync(id);
+            if (oldUser == null)
+            {
+                return false;
+            }
+            return await _repository.DeleteUserAsync(oldUser);
         }
 
         // tätä ei käytetä missään

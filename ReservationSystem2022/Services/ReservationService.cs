@@ -90,7 +90,10 @@ namespace ReservationSystem2022.Services
             }
             oldRes.Id = reservation.Id;
            
-            // ?
+            // huom. tassa vissiin joku vika, kun tietokantaan osaa paivittaa esim. paivamaaran muutoksen
+            // mutta targettia ei osaa paivittaa, eika osaa myoskaan hakea get kutsulla oikeaa target numeroa
+            // vaikka se oikea target numero kylla menee tietokantaan ja nakyy siella
+            // vain postman get kutsussa ei nay, eika tassa updatessa
             User owner = await _userRepository.GetUserAsync(reservation.Owner);
             Item target = await _itemRepository.GetItemAsync(reservation.Target);
 

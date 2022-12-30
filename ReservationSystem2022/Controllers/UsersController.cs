@@ -80,7 +80,7 @@ namespace ReservationSystem2022.Controllers
         // PUT: api/Users/user/username
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         /// <summary>
-        /// You can update your users info
+        /// You can update your users info, search by api/users/username
         /// </summary>
         /// <param name="userName"></param>
         /// <param name="user"></param>
@@ -142,14 +142,14 @@ namespace ReservationSystem2022.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpDelete("{id:int}")]
+        [HttpDelete("{id}")]
         [Authorize]
         public async Task<IActionResult> DeleteUser(long id)
         {
             User userDel = new User();
             userDel.Id = id;
 
-            // tassa joku vika ?
+            // tassa joku vika 
             // tarkista, onko oikeus muokata
             bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, userDel);
 

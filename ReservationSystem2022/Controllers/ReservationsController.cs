@@ -67,7 +67,7 @@ namespace ReservationSystem2022.Controllers
         /// <param name="id"></param>
         /// <param name="reservation"></param>
         /// <returns></returns>
-        [HttpPut("{id:int}")]
+        [HttpPut("{id}")]
         [Authorize]
         public async Task<IActionResult> PutReservation(long id, ReservationDTO reservation)
         {

@@ -61,6 +61,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // frontendia varten
+/*
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(
@@ -69,6 +70,7 @@ builder.Services.AddCors(options =>
             policy.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod();
             });
 });
+*/
 
 var app = builder.Build();
 
@@ -80,7 +82,7 @@ if (app.Environment.IsDevelopment()) // kehitysversiossa
     app.UseSwaggerUI(); 
 }
 
-app.UseCors();
+// app.UseCors();
 
 app.UseHttpsRedirection();
 

@@ -77,6 +77,18 @@ namespace ReservationSystem2022.Services
             return null; // jos ei ole löydetty, palautetaan null
         }
 
+        // tehty erikseen usercontroller poistoa varten (huom. User tyyppinen)
+        public async Task<User> GetIdAsync(long id)
+        {
+            User user = await _repository.GetUserIdAsync(id); // ..service kutsuu repositorya
+
+            if (user != null) // tarkistetaan löytyykö sieltä mitään
+            {
+                return user; // jos löytyy niin tehdään siitä DTO
+            }
+            return null; // jos ei ole löydetty, palautetaan null
+        }
+
         // hae kaikki userit
         public async Task<IEnumerable<UserDTO>> GetUsersAsync()
         {

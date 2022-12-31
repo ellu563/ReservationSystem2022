@@ -20,6 +20,7 @@ namespace ReservationSystem2022.Services
             _itemRepository = itemRepository;
         }
 
+        // luo uusi
         public async Task<ReservationDTO> CreateReservationAsync(ReservationDTO dto)
         {
             if(dto.StartTime >= dto.EndTime)
@@ -43,16 +44,6 @@ namespace ReservationSystem2022.Services
             newReservation = await _repository.AddReservationAsync(newReservation);
 
             return ReservationToDTO(newReservation);
-        }
-
-        public async Task<bool> DeleteReservationAsync(long id)
-        {
-            Reservation oldRes = await _repository.GetReservationAsync(id);
-            if (oldRes == null)
-            {
-                return false;
-            }
-            return await _repository.DeleteReservationAsync(oldRes);
         }
 
         // hae id:n perusteella
@@ -79,6 +70,7 @@ namespace ReservationSystem2022.Services
             return result; // palautetaan
         }
 
+        // paivitys
         public async Task<ReservationDTO> UpdateReservationAsync(ReservationDTO reservation)
         {
             Reservation oldRes = await _repository.GetReservationAsync(reservation.Id); 
@@ -122,6 +114,18 @@ namespace ReservationSystem2022.Services
             return ReservationToDTO(updatedRes);
         }
 
+        // poisto
+        public async Task<bool> DeleteReservationAsync(long id)
+        {
+            Reservation oldRes = await _repository.GetReservationAsync(id);
+            if (oldRes == null)
+            {
+                return false;
+            }
+            return await _repository.DeleteReservationAsync(oldRes);
+        }
+
+        // dto muunnos
         private async Task<Reservation> DTOToReservationAsync(ReservationDTO dto)
         {
             Reservation newReservation = new Reservation();
@@ -145,6 +149,7 @@ namespace ReservationSystem2022.Services
             return newReservation;
         }
         
+        // muunnos
         private ReservationDTO ReservationToDTO(Reservation res)
         {
             ReservationDTO dto = new ReservationDTO();
@@ -155,8 +160,8 @@ namespace ReservationSystem2022.Services
                 dto.Owner = res.Owner.UserName;
             }
             // huom. tassa on viela joku ongelma etta se nayttaa nollaa
-            // menee kantaan oikein mutta ei nayta postmanissa
-            if(res.Target != null)
+            // menee kantaan oikein mutta ei nayta postmanin get kutsussa oikeaa numeroa
+            if (res.Target != null)
             {
                 dto.Target = res.Target.Id;
             }
@@ -166,7 +171,6 @@ namespace ReservationSystem2022.Services
 
             return dto;
         }
-
 
     }
 }

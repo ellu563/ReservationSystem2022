@@ -80,7 +80,7 @@ namespace ReservationSystem2022.Controllers
         // PUT: api/Users/user/username
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         /// <summary>
-        /// You can update your users info, search by api/users/username
+        /// You can update your users info, search by api/users/user/username
         /// </summary>
         /// <param name="userName"></param>
         /// <param name="user"></param>
@@ -124,6 +124,14 @@ namespace ReservationSystem2022.Controllers
         [Authorize]
         public async Task<ActionResult<UserDTO>> PostUser(User user)
         {
+            // tarkista, onko oikeus muokata
+            bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, user);
+
+            if (!isAllowed)
+            {
+                return Unauthorized();
+            }
+
             UserDTO dto = await _service.CreateUserAsync(user); // eli täällä nyt käytetään tuota servicessä olevaa CreateUserAsync
 
             if(dto == null)
@@ -146,10 +154,10 @@ namespace ReservationSystem2022.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteUser(long id)
         {
-            User userDel = new User();
+            User userDel = await _service.GetIdAsync(id);
+            // poistetaan nyt vaan suoraan kannasta kayttaen Useria (ei userDTO:ta)
             userDel.Id = id;
 
-            // tassa joku vika 
             // tarkista, onko oikeus muokata
             bool isAllowed = await _authenticationService.IsAllowed(this.User.FindFirst(ClaimTypes.Name).Value, userDel);
 

@@ -1,6 +1,6 @@
 # Varausjärjestelmä C#
 
-Tämä C#:lla toteutettu varausjärjestelmä tarjoaa API-rajapinnan, jonka avulla voit hallinnoida varauksia, kohteita ja käyttäjiä. Järjestelmä koostuu kolmesta pääkomponentista: `ItemsController`, `ReservationsController` ja `UsersController`, sekä kolmesta repositorysta: `ItemRepository`, `ReservationRepository` ja `UserRepository`.
+Tämä C#:lla toteutettu varausjärjestelmä tarjoaa API-rajapinnan, jonka avulla voit hallinnoida varauksia, kohteita ja käyttäjiä. 
 
 ## Controllers
 
